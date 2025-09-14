@@ -48,17 +48,26 @@ type SubResponse struct {
 	} `json:"subsonic-response"`
 }
 
+type PlaylistEntry struct {
+	ID         string `json:"id"`
+	Title      string `json:"title"`
+	Artist     string `json:"artist"`
+	UserRating int    `json:"userRating"`
+	Path       int    `json:"path"`
+}
+
 type Playlist struct {
-	ID        string    `json:"id"`
-	Name      string    `json:"name"`
-	Comment   string    `json:"comment,omitempty"`
-	SongCount int       `json:"songCount"`
-	Duration  int       `json:"duration"`
-	Public    bool      `json:"public"`
-	Owner     string    `json:"owner"`
-	Created   time.Time `json:"created"`
-	Changed   time.Time `json:"changed"`
-	CoverArt  string    `json:"coverArt"`
+	ID        string          `json:"id"`
+	Name      string          `json:"name"`
+	Comment   string          `json:"comment,omitempty"`
+	SongCount int             `json:"songCount"`
+	Duration  int             `json:"duration"`
+	Public    bool            `json:"public"`
+	Owner     string          `json:"owner"`
+	Created   time.Time       `json:"created"`
+	Changed   time.Time       `json:"changed"`
+	CoverArt  string          `json:"coverArt"`
+	Entry     []PlaylistEntry `json:"entry"`
 }
 
 type Subsonic struct {
@@ -208,6 +217,57 @@ func (c *Subsonic) SearchPlaylist() error {
 		}
 	}
 	return nil
+}
+
+func (c *Subsonic) GetPlaylists() ([]*models.Playlist, error) {
+	result := make([]*models.Playlist, 0)
+	reqParam := "getPlaylists?f=json"
+
+	body, err := c.subsonicRequest(reqParam)
+	if err != nil {
+		return nil, err
+	}
+
+	var resp SubResponse
+	if err := util.ParseResp(body, &resp); err != nil {
+		return nil, err
+	}
+
+	for _, playlist := range resp.SubsonicResponse.Playlists.Playlist {
+		p := &models.Playlist{
+			ID:   playlist.ID,
+			Name: playlist.Name,
+		}
+		result = append(result, p)
+	}
+
+	return result, nil
+}
+
+func (c *Subsonic) GetPlaylist(ID string) ([]*models.Track, error) {
+	result := make([]*models.Track, 0)
+	reqParam := fmt.Sprintf("getPlaylist?id=%s&f=json", ID)
+
+	body, err := c.subsonicRequest(reqParam)
+	if err != nil {
+		return nil, err
+	}
+
+	var resp SubResponse
+	if err := util.ParseResp(body, &resp); err != nil {
+		return nil, err
+	}
+
+	for _, entry := range resp.SubsonicResponse.Playlist.Entry {
+		p := &models.Track{
+			ID:     entry.ID,
+			Title:  entry.Title,
+			Artist: entry.Artist,
+		}
+		result = append(result, p)
+	}
+
+	return result, nil
 }
 
 func (c *Subsonic) UpdatePlaylist() error {

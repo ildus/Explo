@@ -28,6 +28,8 @@ type APIClient interface {
 	SearchPlaylist() error
 	UpdatePlaylist() error
 	DeletePlaylist() error
+	GetPlaylists() ([]*models.Playlist, error)
+	GetPlaylist(ID string) ([]*models.Track, error)
 }
 
 // NewClient initializes a client and sets up authentication
