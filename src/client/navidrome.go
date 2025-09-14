@@ -54,7 +54,7 @@ func (c *Navidrome) GetAuth() error { // Generate salt and token
 	}
 
 	body, err := c.Sub.HttpClient.MakeRequest("POST",
-		fmt.Sprintf("https://%s/auth/login", c.Sub.Cfg.URL),
+		fmt.Sprintf("%s/auth/login", c.Sub.Cfg.URL),
 		bytes.NewBuffer(payloadBytes), nil)
 	if err != nil {
 		return fmt.Errorf("%s", err.Error())
@@ -71,7 +71,7 @@ func (c *Navidrome) GetAuth() error { // Generate salt and token
 	c.Sub.Cfg.ClientID = auth.ID
 	c.Sub.Cfg.Creds.APIKey = auth.Token
 
-	return nil
+	return c.AddHeader()
 }
 
 func (c *Navidrome) AddHeader() error {
@@ -101,6 +101,7 @@ func (c *Navidrome) GetPlaylists() ([]*models.Playlist, error) {
 }
 
 func (c *Navidrome) GetPlaylist(ID string) ([]*models.Track, error) {
+	result := make([]*models.Track, 0)
 	api := fmt.Sprintf("playlist/%s/tracks", ID)
 	body, err := c.navidromeRequest(api)
 
@@ -113,9 +114,18 @@ func (c *Navidrome) GetPlaylist(ID string) ([]*models.Track, error) {
 		return nil, err
 	}
 
-	fmt.Printf("%s, %d tracks\n", ID, len(tracks))
+	for _, track := range tracks {
+		p := &models.Track{
+			ID:         track.ID,
+			Title:      track.Title,
+			Artist:     track.Artist,
+			UserRating: track.Rating,
+			File:       track.Path,
+		}
+		result = append(result, p)
+	}
 
-	return nil, nil
+	return result, nil
 }
 
 func (c *Navidrome) SearchSongs(tracks []*models.Track) error {
@@ -147,13 +157,6 @@ func (c *Navidrome) navidromeRequest(apiUrl string) ([]byte, error) {
 	body, err := c.Sub.HttpClient.MakeRequest("GET", reqURL, nil, c.Sub.Cfg.Creds.Headers)
 	if err != nil {
 		return nil, fmt.Errorf("failed to make request %s", err.Error())
-	}
-
-	var checkResp FailedResp
-	if err = util.ParseResp(body, &checkResp); err != nil {
-		return nil, fmt.Errorf("failed to unmarshal request %s", err.Error())
-	} else if checkResp.SubsonicResponse.Status == "failed" {
-		return nil, fmt.Errorf("%s", checkResp.SubsonicResponse.Error.Message)
 	}
 	return body, nil
 }

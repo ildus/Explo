@@ -194,9 +194,10 @@ func fetchAndSaveAudioTrack(cfg *Youtube, track *models.Track) bool {
 	}
 
 	input := path.Join("/tmp", track.File)
+	output := path.Join(cfg.DownloadDir, track.File)
 	defer os.Remove(input)
 
-	cmd := ffmpeg.Input(input).Output(path.Join(cfg.DownloadDir, track.File), ffmpeg.KwArgs{
+	cmd := ffmpeg.Input(input).Output(output, ffmpeg.KwArgs{
 		"codec":    "copy",
 		"metadata": []string{"artist=" + track.Artist, "title=" + track.Title, "album=" + track.Album},
 		"loglevel": "error",
@@ -210,6 +211,9 @@ func fetchAndSaveAudioTrack(cfg *Youtube, track *models.Track) bool {
 		log.Printf("failed to add tags to audio: %s", err.Error())
 		return false
 	}
+
+	// Save the full path to File member
+	track.File = output
 
 	return true
 }

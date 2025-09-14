@@ -3,6 +3,7 @@ package client
 import (
 	"fmt"
 	"log"
+	"os"
 	"time"
 
 	"explo/src/config"
@@ -38,6 +39,7 @@ func NewClient(cfg *config.Config, httpClient *util.HttpClient) (*Client, error)
 		System: cfg.System,
 		Cfg:    &cfg.ClientCfg,
 	}
+
 	switch c.System {
 
 	case "emby":
@@ -123,6 +125,12 @@ func (c *Client) systemSetup() error {
 		}
 		return c.API.GetLibrary()
 
+	case "navidrome":
+		if c.Cfg.Creds.User == "" || c.Cfg.Creds.Password == "" {
+			return fmt.Errorf("Subsonic USER and PASSWORD are required")
+		}
+		return c.API.GetAuth()
+
 	default:
 		return fmt.Errorf("unknown system: %s. Use a supported system (emby, jellyfin, mpd, plex, or subsonic)", c.System)
 	}
@@ -185,7 +193,8 @@ func (c *Client) CleanupTracks() error {
 
 		for _, t := range tracks {
 			if t.UserRating == 1 {
-				log.Printf("remove %s-%s", t.Artist, t.Title)
+				os.Remove(t.File)
+				log.Printf("Remove %s-%s located at %s", t.Artist, t.Title, t.File)
 			}
 		}
 	}
