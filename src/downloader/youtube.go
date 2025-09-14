@@ -16,7 +16,8 @@ import (
 	"explo/src/debug"
 	"explo/src/models"
 	"explo/src/util"
-	"github.com/dhowden/tag"
+
+	ffmpeg "github.com/u2takey/ffmpeg-go"
 )
 
 var opus_re *regexp.Regexp = regexp.MustCompile(`"(.*\.opus)"`)
@@ -116,35 +117,10 @@ func queryYTMusic(track *models.Track, query string) error {
 	return nil
 }
 
-func updateTags(cfg *Youtube, track *models.Track) error {
-	fn := path.Join(cfg.DownloadDir, track.File)
-	f, err := os.Open(fn)
-	if err != nil {
-		return fmt.Errorf("could not open file %s: %v", fn, err)
-	}
-	defer f.Close()
-
-	m, err := tag.ReadFrom(f)
-	if err != nil {
-		return fmt.Errorf("could not read tags from %s: %v", fn, err)
-	}
-
-	track.Artist = m.Artist()
-	track.Title = m.Title()
-
-	return nil
-}
-
 func (c *Youtube) GetTrack(track *models.Track) error {
-	ok := fetchAndSaveAudioTrack(c, track)
+	track.Present = fetchAndSaveAudioTrack(c, track)
 
-	if ok {
-		err := updateTags(c, track)
-		if err != nil {
-			return err
-		}
-
-		track.Present = true
+	if track.Present {
 		log.Printf("[youtube] Download finished: %s - %s", track.Artist, track.Title)
 		return nil
 	}
@@ -210,9 +186,28 @@ func gatherVideo(cfg cfg.Youtube, videos Videos, track models.Track) string { //
 func fetchAndSaveAudioTrack(cfg *Youtube, track *models.Track) bool {
 	var err error
 
-	track.File, err = downloadAudioTrack(cfg.DownloadDir, track.ID)
+	track.File, err = downloadAudioTrack("/tmp", track.ID)
+
 	if err != nil {
 		log.Printf("failed downloading track for ID %s: %s", track.ID, err.Error())
+		return false
+	}
+
+	input := path.Join("/tmp", track.File)
+	defer os.Remove(input)
+
+	cmd := ffmpeg.Input(input).Output(path.Join(cfg.DownloadDir, track.File), ffmpeg.KwArgs{
+		"codec":    "copy",
+		"metadata": []string{"artist=" + track.Artist, "title=" + track.Title, "album=" + track.Album},
+		"loglevel": "error",
+	}).OverWriteOutput().ErrorToStdOut()
+
+	if cfg.Cfg.FfmpegPath != "" {
+		cmd.SetFfmpegPath(cfg.Cfg.FfmpegPath)
+	}
+
+	if err = cmd.Run(); err != nil {
+		log.Printf("failed to add tags to audio: %s", err.Error())
 		return false
 	}
 
