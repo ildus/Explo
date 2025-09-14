@@ -55,8 +55,12 @@ func NewClient(cfg *config.Config, httpClient *util.HttpClient) (*Client, error)
 	case "subsonic":
 		c.API = NewSubsonic(cfg.ClientCfg, httpClient)
 
+	case "navidrome":
+		sub := NewSubsonic(cfg.ClientCfg, httpClient)
+		c.API = NewNavidrome(sub)
+
 	default:
-		log.Fatalf("unknown system: %s. Use a supported system (emby, jellyfin, mpd, plex, or subsonic).", c.System)
+		log.Fatalf("unknown system: %s. Use a supported system (emby, jellyfin, mpd, plex, subsonic, or navidrome).", c.System)
 	}
 
 	if err := c.systemSetup(); err != nil { // Run setup automatically
@@ -164,5 +168,27 @@ func (c *Client) DeletePlaylist() error {
 	if err := c.API.DeletePlaylist(); err != nil {
 		return fmt.Errorf("[%s] failed to delete playlist: %s", c.System, err.Error())
 	}
+	return nil
+}
+
+func (c *Client) CleanupTracks() error {
+	playlists, err := c.API.GetPlaylists()
+	if err != nil {
+		return err
+	}
+
+	for _, p := range playlists {
+		tracks, err2 := c.API.GetPlaylist(p.ID)
+		if err2 != nil {
+			return err2
+		}
+
+		for _, t := range tracks {
+			if t.UserRating == 1 {
+				log.Printf("remove %s-%s", t.Artist, t.Title)
+			}
+		}
+	}
+
 	return nil
 }

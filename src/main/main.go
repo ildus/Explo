@@ -41,6 +41,16 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	if cfg.Flags.DeleteRating1 {
+		log.Println("Cleaning songs with rating equal to 1")
+		err = client.CleanupTracks()
+		if err != nil {
+			log.Printf("Cleanup failed with error: %v", err)
+		}
+		return
+	}
+
 	discovery := discovery.NewDiscoverer(cfg.DiscoveryCfg, httpClient)
 	downloader := downloader.NewDownloader(&cfg.DownloadCfg, httpClient, cfg.Flags.ExcludeLocal)
 

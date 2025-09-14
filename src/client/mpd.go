@@ -40,7 +40,7 @@ func (c *MPD) SearchSongs(tracks []*models.Track) error {
 		if tracks[i].File == "" {
 			continue
 		}
-	
+
 		if c.Cfg.DownloadDir != "" {
 			fullName := tracks[i].File
 			if fullPath, err := c.findTrack(fullName, c.Cfg.DownloadDir); err == nil {
@@ -67,7 +67,7 @@ func (c *MPD) CreatePlaylist(tracks []*models.Track) error {
 
 	for _, track := range tracks {
 		if track.Present {
-			_, err := f.Write([]byte(track.File+"\n"))
+			_, err := f.Write([]byte(track.File + "\n"))
 			if err != nil {
 				debug.Debug(fmt.Sprintf("failed to write song to file: %s", err.Error()))
 			}
@@ -77,10 +77,10 @@ func (c *MPD) CreatePlaylist(tracks []*models.Track) error {
 }
 
 func (c *MPD) SearchPlaylist() error {
-	if _, err := os.Stat(c.Cfg.PlaylistDir+c.Cfg.PlaylistName+".m3u"); errors.Is(err, os.ErrNotExist) {
+	if _, err := os.Stat(c.Cfg.PlaylistDir + c.Cfg.PlaylistName + ".m3u"); errors.Is(err, os.ErrNotExist) {
 		return fmt.Errorf("did not find playlist: %s", c.Cfg.PlaylistName)
 	} else {
-		c.Cfg.PlaylistID = c.Cfg.PlaylistDir+c.Cfg.PlaylistName+".m3u"
+		c.Cfg.PlaylistID = c.Cfg.PlaylistDir + c.Cfg.PlaylistName + ".m3u"
 		return nil
 	}
 }
@@ -101,20 +101,28 @@ func (c *MPD) DeletePlaylist() error {
 
 func (c MPD) findTrack(name, path string) (string, error) {
 	var foundPath string
-    errorFound := errors.New("file found")
-    err := filepath.WalkDir(path, func(currentPath string, d os.DirEntry, err error) error {
-    if err != nil {
-        return err
-    }
-    if d.Name() == name {
-		foundPath = currentPath
-        return errorFound
-    }
-    return nil
-   })
-   if errors.Is(err, errorFound) {
+	errorFound := errors.New("file found")
+	err := filepath.WalkDir(path, func(currentPath string, d os.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+		if d.Name() == name {
+			foundPath = currentPath
+			return errorFound
+		}
+		return nil
+	})
+	if errors.Is(err, errorFound) {
 		return foundPath, nil
-   }
+	}
 
-   return "", fmt.Errorf("no file found named %s in %s: %s", name, path, err)
+	return "", fmt.Errorf("no file found named %s in %s: %s", name, path, err)
+}
+
+func (c *MPD) GetPlaylists() ([]*models.Playlist, error) {
+	return nil, errors.New("not implemeted for mpd")
+}
+
+func (c *MPD) GetPlaylist(ID string) ([]*models.Track, error) {
+	return nil, errors.New("not implemeted for mpd")
 }

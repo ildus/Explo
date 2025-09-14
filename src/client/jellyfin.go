@@ -3,6 +3,7 @@ package client
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/url"
 	"strings"
@@ -48,7 +49,6 @@ type Items struct {
 	Album       string   `json:"Album,omitempty"`
 	AlbumArtist string   `json:"AlbumArtist,omitempty"`
 	Artists     []string `json:"Artists"`
-
 }
 
 type JFPlaylist struct {
@@ -254,4 +254,12 @@ func formatJFSongs(tracks []*models.Track) ([]byte, error) { // marshal track ID
 		return nil, err
 	}
 	return songs, nil
+}
+
+func (c *Jellyfin) GetPlaylists() ([]*models.Playlist, error) {
+	return nil, errors.New("not implemeted for jellyfin")
+}
+
+func (c *Jellyfin) GetPlaylist(ID string) ([]*models.Track, error) {
+	return nil, errors.New("not implemeted for jellyfin")
 }

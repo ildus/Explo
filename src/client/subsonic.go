@@ -53,7 +53,7 @@ type PlaylistEntry struct {
 	Title      string `json:"title"`
 	Artist     string `json:"artist"`
 	UserRating int    `json:"userRating"`
-	Path       int    `json:"path"`
+	Path       string `json:"path"`
 }
 
 type Playlist struct {
@@ -248,6 +248,7 @@ func (c *Subsonic) GetPlaylist(ID string) ([]*models.Track, error) {
 	result := make([]*models.Track, 0)
 	reqParam := fmt.Sprintf("getPlaylist?id=%s&f=json", ID)
 
+	fmt.Printf("%s\n", ID)
 	body, err := c.subsonicRequest(reqParam)
 	if err != nil {
 		return nil, err
@@ -259,6 +260,7 @@ func (c *Subsonic) GetPlaylist(ID string) ([]*models.Track, error) {
 	}
 
 	for _, entry := range resp.SubsonicResponse.Playlist.Entry {
+
 		p := &models.Track{
 			ID:     entry.ID,
 			Title:  entry.Title,
@@ -304,4 +306,3 @@ func (c *Subsonic) subsonicRequest(reqParams string) ([]byte, error) {
 	}
 	return body, nil
 }
-

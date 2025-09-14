@@ -2,11 +2,12 @@ package client
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"log"
+	"net/url"
 	"strings"
 	"time"
-	"net/url"
 
 	"explo/src/config"
 	"explo/src/debug"
@@ -15,26 +16,26 @@ import (
 )
 
 type EmbyPaths []struct {
-	Name           string         `json:"Name"`
-	Locations      []string       `json:"Locations"`
-	CollectionType string         `json:"CollectionType"`
-	ItemID         string         `json:"ItemId"`
-	RefreshStatus  string         `json:"RefreshStatus"`
+	Name           string   `json:"Name"`
+	Locations      []string `json:"Locations"`
+	CollectionType string   `json:"CollectionType"`
+	ItemID         string   `json:"ItemId"`
+	RefreshStatus  string   `json:"RefreshStatus"`
 }
 
 type EmbyItemSearch struct {
 	Items            []EmbyItems `json:"Items"`
-	TotalRecordCount int     `json:"TotalRecordCount"`
+	TotalRecordCount int         `json:"TotalRecordCount"`
 }
 
 type EmbyItems struct {
-	Name              string          `json:"Name"`
-	ServerID          string          `json:"ServerId"`
-	ID                string          `json:"Id"`
-	Path			  string		  `json:"Path"`
-	Album             string          `json:"Album,omitempty"`
-	AlbumArtist       string          `json:"AlbumArtist,omitempty"`
-	Artists           []string  	  `json:"Artists"`
+	Name        string   `json:"Name"`
+	ServerID    string   `json:"ServerId"`
+	ID          string   `json:"Id"`
+	Path        string   `json:"Path"`
+	Album       string   `json:"Album,omitempty"`
+	AlbumArtist string   `json:"AlbumArtist,omitempty"`
+	Artists     []string `json:"Artists"`
 }
 
 type EmbyPlaylist struct {
@@ -42,14 +43,14 @@ type EmbyPlaylist struct {
 }
 
 type Emby struct {
-	LibraryID string
+	LibraryID  string
 	HttpClient *util.HttpClient
-	Cfg config.ClientConfig
+	Cfg        config.ClientConfig
 }
 
 func NewEmby(cfg config.ClientConfig, httpClient *util.HttpClient) *Emby {
 	return &Emby{Cfg: cfg,
-	HttpClient: httpClient}
+		HttpClient: httpClient}
 }
 
 func (c *Emby) AddHeader() error {
@@ -184,7 +185,6 @@ func (c *Emby) CreatePlaylist(tracks []*models.Track) error {
 
 	reqParam := fmt.Sprintf("/emby/Playlists?Name=%s&Ids=%s&MediaType=Music", c.Cfg.PlaylistName, songIDs)
 
-
 	body, err := c.HttpClient.MakeRequest("POST", c.Cfg.URL+reqParam, nil, c.Cfg.Creds.Headers)
 	if err != nil {
 		return err
@@ -228,10 +228,18 @@ func formatEmbySongs(tracks []*models.Track) string {
 	songIDs := make([]string, 0, len(tracks))
 	for _, track := range tracks {
 		if track.Present {
-			songIDs = append(songIDs,track.ID)
+			songIDs = append(songIDs, track.ID)
 		}
 	}
 	songs := strings.Join(songIDs, ",")
 
 	return songs
+}
+
+func (c *Emby) GetPlaylists() ([]*models.Playlist, error) {
+	return nil, errors.New("not implemeted for Emby")
+}
+
+func (c *Emby) GetPlaylist(ID string) ([]*models.Track, error) {
+	return nil, errors.New("not implemeted for Emby")
 }

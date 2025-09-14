@@ -1,10 +1,10 @@
 package config
 
 import (
-	"slices"
 	"fmt"
-	"strings"
 	flag "github.com/spf13/pflag"
+	"slices"
+	"strings"
 )
 
 var (
@@ -17,11 +17,14 @@ func (cfg *Config) GetFlags() error {
 	var playlist string
 	var downloadMode string
 	var ExcludeLocal bool
+	var DeleteRating1 bool
+
 	// Long flags
 	flag.StringVarP(&configPath, "config", "c", ".env", "Path of the configuration file")
 	flag.StringVarP(&playlist, "playlist", "p", "weekly-exploration", "Playlist where to get tracks. Supported: weekly-exploration, weekly-jams, daily-jams")
 	flag.StringVarP(&downloadMode, "download-mode", "d", "normal", "Download mode: 'normal' (download only when track is not found locally), 'skip' (skip downloading, only use tracks already found locally), 'force' (always download, don't check for local tracks)")
-	flag.BoolVarP(&ExcludeLocal, "exclude-local", "e",  false, "Exclude locally found tracks from the imported playlist")
+	flag.BoolVarP(&ExcludeLocal, "exclude-local", "e", false, "Exclude locally found tracks from the imported playlist")
+	flag.BoolVar(&DeleteRating1, "cleanup", false, "Delete songs with rating equal to 1")
 
 	flag.Parse()
 
@@ -41,6 +44,7 @@ func (cfg *Config) GetFlags() error {
 	cfg.Flags.Playlist = playlist
 	cfg.Flags.DownloadMode = downloadMode
 	cfg.Flags.ExcludeLocal = ExcludeLocal
+	cfg.Flags.DeleteRating1 = DeleteRating1
 	cfg.mergeFlags()
 	return nil
 }
@@ -53,3 +57,4 @@ func (cfg *Config) mergeFlags() {
 func contains(valid []string, val string) bool {
 	return slices.Contains(valid, val)
 }
+
