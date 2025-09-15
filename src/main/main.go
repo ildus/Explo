@@ -44,7 +44,7 @@ func main() {
 
 	if cfg.Flags.DeleteRating1 {
 		log.Println("Cleaning songs with rating equal to 1")
-		err = client.CleanupTracks()
+		err = client.CleanupTracks(cfg.DownloadCfg.DownloadDir)
 		if err != nil {
 			log.Printf("Cleanup failed with error: %v", err)
 		}

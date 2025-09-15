@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path"
 	"time"
 
 	"explo/src/config"
@@ -179,7 +180,7 @@ func (c *Client) DeletePlaylist() error {
 	return nil
 }
 
-func (c *Client) CleanupTracks() error {
+func (c *Client) CleanupTracks(baseDir string) error {
 	playlists, err := c.API.GetPlaylists()
 	if err != nil {
 		return err
@@ -193,8 +194,13 @@ func (c *Client) CleanupTracks() error {
 
 		for _, t := range tracks {
 			if t.UserRating == 1 {
-				os.Remove(t.File)
-				log.Printf("Remove %s-%s located at %s", t.Artist, t.Title, t.File)
+				fn := path.Join(baseDir, t.File)
+				err = os.Remove(fn)
+				if err != nil {
+					log.Printf("Could not remove %s-%s: %v", t.Artist, t.Title, err)
+				} else {
+					log.Printf("Removed %s-%s located at %s", t.Artist, t.Title, t.File)
+				}
 			}
 		}
 	}
