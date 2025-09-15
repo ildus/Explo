@@ -34,6 +34,8 @@ func main() {
 		log.Fatal(err)
 	}
 	cfg.ReadEnv()
+
+	origDownloadDir := cfg.DownloadCfg.DownloadDir
 	setup(&cfg)
 
 	httpClient := initHttpClient()
@@ -44,7 +46,7 @@ func main() {
 
 	if cfg.Flags.DeleteRating1 {
 		log.Println("Cleaning songs with rating equal to 1")
-		err = client.CleanupTracks(cfg.DownloadCfg.DownloadDir)
+		err = client.CleanupTracks(origDownloadDir)
 		if err != nil {
 			log.Printf("Cleanup failed with error: %v", err)
 		}
