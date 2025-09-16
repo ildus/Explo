@@ -384,3 +384,6 @@ func (c *Plex) GetPlaylists() ([]*models.Playlist, error) {
 func (c *Plex) GetPlaylist(ID string) ([]*models.Track, error) {
 	return nil, errors.New("not implemeted for Plex")
 }
+
+func (c *Plex) DeleteMissing() {
+}

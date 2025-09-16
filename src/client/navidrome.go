@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"strings"
 
 	"explo/src/models"
 	"explo/src/util"
@@ -153,10 +154,25 @@ func (c *Navidrome) DeletePlaylist() error {
 }
 
 func (c *Navidrome) navidromeRequest(apiUrl string) ([]byte, error) {
-	reqURL := fmt.Sprintf("%s/api/%s", c.Sub.Cfg.URL, apiUrl)
-	body, err := c.Sub.HttpClient.MakeRequest("GET", reqURL, nil, c.Sub.Cfg.Creds.Headers)
+	reqType, apiPart, found := strings.Cut(apiUrl, ":")
+	if !found {
+		apiPart = apiUrl
+		reqType = "GET"
+	}
+
+	reqURL := fmt.Sprintf("%s/api/%s", c.Sub.Cfg.URL, apiPart)
+	body, err := c.Sub.HttpClient.MakeRequest(reqType, reqURL, nil, c.Sub.Cfg.Creds.Headers)
 	if err != nil {
-		return nil, fmt.Errorf("failed to make request %s", err.Error())
+		return nil, fmt.Errorf("failed to make API request %s: %s", apiUrl, err.Error())
 	}
 	return body, nil
+}
+
+func (c *Navidrome) DeleteMissing() {
+	api := "DELETE:missing"
+	_, err := c.navidromeRequest(api)
+
+	if err != nil {
+		fmt.Println(err)
+	}
 }

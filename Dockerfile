@@ -17,7 +17,7 @@ RUN apk add --no-cache \
     libc6-compat \
     ffmpeg \
     yt-dlp \
-    tzdata 
+    tzdata
 
 # Install ytmusicapi in the container
 RUN pip install --no-cache-dir ytmusicapi

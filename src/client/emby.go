@@ -243,3 +243,6 @@ func (c *Emby) GetPlaylists() ([]*models.Playlist, error) {
 func (c *Emby) GetPlaylist(ID string) ([]*models.Track, error) {
 	return nil, errors.New("not implemeted for Emby")
 }
+
+func (c *Emby) DeleteMissing() {
+}

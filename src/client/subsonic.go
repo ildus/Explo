@@ -305,3 +305,6 @@ func (c *Subsonic) subsonicRequest(reqParams string) ([]byte, error) {
 	}
 	return body, nil
 }
+
+func (c *Subsonic) DeleteMissing() {
+}

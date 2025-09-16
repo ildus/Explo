@@ -263,3 +263,6 @@ func (c *Jellyfin) GetPlaylists() ([]*models.Playlist, error) {
 func (c *Jellyfin) GetPlaylist(ID string) ([]*models.Track, error) {
 	return nil, errors.New("not implemeted for jellyfin")
 }
+
+func (c *Jellyfin) DeleteMissing() {
+}

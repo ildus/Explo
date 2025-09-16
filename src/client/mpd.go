@@ -126,3 +126,6 @@ func (c *MPD) GetPlaylists() ([]*models.Playlist, error) {
 func (c *MPD) GetPlaylist(ID string) ([]*models.Track, error) {
 	return nil, errors.New("not implemeted for mpd")
 }
+
+func (c *MPD) DeleteMissing() {
+}

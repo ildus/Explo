@@ -21,7 +21,7 @@ for var in $(env | grep "_SCHEDULE=" | cut -d= -f1); do
   fi
 
   # Default: just run explo if flags are empty
-  cmd="apk add --upgrade yt-dlp && cd /opt/explo && ./explo $flags >> /proc/1/fd/1 2>&1"
+  cmd="cd /opt/explo && ./explo $flags"
 
   echo "$schedule $cmd" >> /etc/crontabs/root
   echo "[setup] Registered job: $job"

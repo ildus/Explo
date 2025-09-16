@@ -32,6 +32,7 @@ type APIClient interface {
 	DeletePlaylist() error
 	GetPlaylists() ([]*models.Playlist, error)
 	GetPlaylist(ID string) ([]*models.Track, error)
+	DeleteMissing()
 }
 
 // NewClient initializes a client and sets up authentication
@@ -203,7 +204,10 @@ func (c *Client) CleanupTracks(baseDir string) error {
 				}
 			}
 		}
+
 	}
+
+	c.API.DeleteMissing()
 
 	return nil
 }

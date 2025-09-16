@@ -57,18 +57,18 @@ type Metadata struct {
 type Recordings map[string]Metadata
 
 type CreatedFor struct {
-	Playlists     []struct {
+	Playlists []struct {
 		Playlist struct {
-			Creator    string    `json:"creator"`
-			Date       time.Time `json:"date"`
-			Extension  struct {
+			Creator   string    `json:"creator"`
+			Date      time.Time `json:"date"`
+			Extension struct {
 				HTTPSJspfPlaylist struct {
 					AdditionalMetadata struct {
 						AlgorithmMetadata struct {
 							SourcePatch string `json:"source_patch"`
 						} `json:"algorithm_metadata"`
 					} `json:"additional_metadata"`
-					CreatedFor     string    `json:"created_for"`
+					CreatedFor string `json:"created_for"`
 				} `json:"https://musicbrainz.org/doc/jspf#playlist"`
 			} `json:"extension"`
 			Identifier string `json:"identifier"`
@@ -84,9 +84,9 @@ type Exploration struct {
 		Identifier string    `json:"identifier"`
 		Title      string    `json:"title"`
 		Tracks     []struct {
-			Album      string `json:"album"`
-			Creator    string `json:"creator"`
-			Duration   int `json:"duration"`
+			Album     string `json:"album"`
+			Creator   string `json:"creator"`
+			Duration  int    `json:"duration"`
 			Extension struct {
 				HTTPSJspfTrack struct {
 					AddedAt            time.Time `json:"added_at"`
@@ -104,25 +104,24 @@ type Exploration struct {
 				} `json:"https://musicbrainz.org/doc/jspf#track"`
 			} `json:"extension"`
 			Identifier []string `json:"identifier"`
-			Title      string `json:"title"`
+			Title      string   `json:"title"`
 		} `json:"track"`
 	} `json:"playlist"`
 }
 
 type ListenBrainz struct {
 	HttpClient *util.HttpClient
-	cfg cfg.Listenbrainz
-	Separator string
+	cfg        cfg.Listenbrainz
+	Separator  string
 }
-
 
 func NewListenBrainz(cfg cfg.DiscoveryConfig, httpClient *util.HttpClient) *ListenBrainz {
 	return &ListenBrainz{
-		cfg: cfg.Listenbrainz,
+		cfg:        cfg.Listenbrainz,
 		HttpClient: httpClient,
 	}
 }
-func (c *ListenBrainz) QueryTracks() ([]*models.Track, error)  {
+func (c *ListenBrainz) QueryTracks() ([]*models.Track, error) {
 	var tracks []*models.Track
 
 	switch c.cfg.Discovery {
@@ -135,7 +134,7 @@ func (c *ListenBrainz) QueryTracks() ([]*models.Track, error)  {
 		if err != nil {
 			return nil, err
 		}
-		
+
 	default:
 		mbids, err := c.getAPIRecommendations(c.cfg.User)
 		if err != nil {
@@ -214,12 +213,12 @@ func (c *ListenBrainz) getTracks(mbids []string, singleArtist bool) ([]*models.T
 		}
 
 		tracks = append(tracks, &models.Track{
-			Album:       recording.Release.Name,
-			Artist:      artist,
-			MainArtist:  mainArtist,
-			CleanTitle:  recording.Recording.Name,
-			Title:       title,
-			Duration:    recording.Recording.Length,
+			Album:      recording.Release.Name,
+			Artist:     artist,
+			MainArtist: mainArtist,
+			CleanTitle: recording.Recording.Name,
+			Title:      title,
+			Duration:   recording.Recording.Length,
 		})
 	}
 
@@ -246,10 +245,10 @@ func (c *ListenBrainz) getImportPlaylist(user string) (string, error) { // Get u
 	} else {
 		currentDay = now.YearDay()
 	}
-	
+
 	for _, playlist := range playlists.Playlists {
 		var timeMatch bool
-		
+
 		if c.cfg.ImportPlaylist != "daily-jams" {
 			_, creationWeek := playlist.Playlist.Date.Local().ISOWeek()
 			timeMatch = currentWeek == creationWeek
@@ -322,9 +321,8 @@ func (c *ListenBrainz) parsePlaylist(identifier string, singleArtist bool) ([]*m
 
 func (c *ListenBrainz) lbRequest(path string) ([]byte, error) { // Handle ListenBrainz API requests
 
-
 	reqURL := fmt.Sprintf("https://api.listenbrainz.org/1/%s", path)
-	
+
 	body, err := c.HttpClient.MakeRequest("GET", reqURL, nil, nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to make request to ListenBrainz API: %s", err)
@@ -333,6 +331,7 @@ func (c *ListenBrainz) lbRequest(path string) ([]byte, error) { // Handle Listen
 	if len(body) == 0 {
 		return nil, fmt.Errorf("ListenBrainz API returned empty response for: %s", reqURL)
 	}
-	
+
 	return body, nil
 }
+
