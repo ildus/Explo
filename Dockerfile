@@ -10,17 +10,19 @@ COPY ./ .
 ARG TARGETARCH
 RUN GOOS=linux GOARCH=$TARGETARCH go build -o explo ./src/main/
 
-FROM python:3.12-alpine
+FROM alpine:edge
 
 # Install runtime deps: libc compat, ffmpeg, yt-dlp, tzdata
 RUN apk add --no-cache \
     libc6-compat \
     ffmpeg \
     yt-dlp \
+    python3 \
+    py3-pip \
     tzdata
 
 # Install ytmusicapi in the container
-RUN pip install --no-cache-dir ytmusicapi
+RUN pip3 install --break-system-packages --no-cache-dir ytmusicapi
 
 # Set working directory
 WORKDIR /opt/explo/
@@ -30,10 +32,9 @@ COPY ./docker/start.sh /start.sh
 COPY --from=builder /app/explo .
 COPY src/downloader/youtube_music/search_ytmusic.py .
 
-
 RUN chmod +x /start.sh ./explo
 
-# Can be defined from compose as well 
+# Can be defined from compose as well
 ENV WEEKLY_EXPLORATION_SCHEDULE="15 0 * * 2"
 
 CMD ["/start.sh"]
